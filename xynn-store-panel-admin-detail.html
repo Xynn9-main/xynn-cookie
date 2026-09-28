@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#100b1c">
+<title>Xynn Store — Pengiriman</title>
+<style>
+:root{--bg:#0c0913;--panel:#171123;--panel2:#211832;--purple:#9b5cff;--pink:#d78cff;--text:#f7f2ff;--muted:#b8adc9;--line:#342647;--green:#7cf0bd;--warn:#ffd38a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#39205b 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.wrap{width:min(920px,92%);margin:auto}.nav{padding:22px 0;border-bottom:1px solid #ffffff12;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-weight:900;font-size:1.25rem}.brand span{color:var(--pink)}.nav small{color:var(--muted)}header{padding:42px 0 24px} .eyebrow{color:#d8baff;background:#9b5cff1c;border:1px solid #9b5cff44;border-radius:999px;padding:6px 11px;font-size:.82rem}h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.08;letter-spacing:-1.5px;margin:18px 0 10px}p{color:var(--muted)}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:10px 15px;border-radius:11px;font-weight:750}.tab.active{background:linear-gradient(135deg,#8b48ed,#b45cf6);color:white;border-color:transparent}.card{background:linear-gradient(160deg,#1b1428,#120e1a);border:1px solid var(--line);border-radius:18px;padding:22px;margin:14px 0}.card h2{margin:0 0 6px}.form{display:grid;gap:14px;margin-top:18px}label{display:grid;gap:7px;font-weight:700}input,textarea{width:100%;border:1px solid #4a3b5d;background:#100c18;color:var(--text);padding:12px 13px;border-radius:10px;font:inherit}textarea{resize:vertical;min-height:110px}.btn{border:0;border-radius:11px;padding:12px 16px;font-weight:800;color:white;background:linear-gradient(135deg,#8b48ed,#b45cf6)}.btn.secondary{background:#211832;border:1px solid #4a3b5d}.row{display:flex;gap:10px;flex-wrap:wrap}.notice{padding:13px 15px;border-radius:12px;border:1px solid #6b5128;background:#332714;color:var(--warn);font-size:.9rem}.result{margin-top:16px}.detail{border:1px solid #49365d;background:#130e1d;border-radius:12px;padding:16px;margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere}.muted{color:var(--muted);font-size:.9rem}.hidden{display:none}.status{color:var(--green);min-height:1.4em}footer{padding:28px 0 40px;color:var(--muted);font-size:.85rem}@media(max-width:600px){.card{padding:17px}.nav{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="nav"><div class="brand">XYNN <span>STORE</span></div><small>Portal Pengiriman</small></nav>
+<header><span class="eyebrow">✦ ORDER DELIVERY</span><h1>Pengiriman <span style="color:var(--pink)">Pesanan</span></h1><p>Masukkan kode pesanan untuk melihat detail pengiriman. Admin dapat menambahkan detail setelah pembayaran diverifikasi.</p></header>
+<div class="tabs"><button class="tab active" id="customerTab">Cek Pesanan</button><button class="tab" id="adminTab">Panel Admin</button></div>
+<section class="card" id="customerPanel">
+<h2>Cek detail pesanan</h2><p>Gunakan kode pesanan yang kamu terima setelah checkout.</p>
+<form class="form" id="lookupForm"><label>Kode pesanan<input id="lookupCode" required placeholder="Contoh: XYNN-123456" autocomplete="off"></label><button class="btn" type="submit">Lihat Pengiriman</button></form>
+<div id="lookupResult" class="result"></div>
+</section>
+<section class="card hidden" id="adminPanel">
+<h2>Login Admin</h2><p>Masuk menggunakan akun admin Supabase.</p>
+<form class="form" id="loginForm">
+<label>Email admin<input id="adminEmail" type="email" required autocomplete="username"></label>
+<label>Password<input id="adminPassword" type="password" required autocomplete="current-password"></label>
+<button class="btn" type="submit">Login</button><div class="status" id="loginStatus" role="status"></div>
+</form>
+<div id="adminTools" class="hidden">
+<div class="row" style="justify-content:space-between;align-items:center"><p id="adminIdentity" class="muted"></p><button class="btn secondary" type="button" id="logoutButton">Logout</button></div>
+<h2>Kelola pesanan</h2><p>Verifikasi pembayaran setelah dana benar-benar masuk.</p>
+<form class="form" id="deliveryForm">
+<label>Kode pesanan<input id="orderCode" required placeholder="Kode pesanan lengkap" autocomplete="off"></label>
+<label>Status pembayaran<select id="paymentStatus"><option value="pending">Menunggu verifikasi</option><option value="verified">Terverifikasi</option><option value="rejected">Ditolak</option></select></label>
+<label>Status pengiriman<select id="deliveryStatus"><option value="pending">Menunggu diproses</option><option value="ready">Detail tersedia</option><option value="completed">Selesai</option></select></label>
+<label>Username / nama penerima<input id="recipient" placeholder="Nama penerima"></label>
+<label>Detail / instruksi pengiriman<textarea id="instructions" placeholder="Tulis detail penyerahan yang aman…"></textarea></label>
+<div class="notice">Jangan masukkan password, cookie sesi, kode verifikasi, atau data pemulihan akun.</div>
+<div class="row"><button class="btn" type="submit">Simpan Perubahan</button><button class="btn secondary" type="button" id="resetForm">Kosongkan</button></div>
+<div class="status" id="saveStatus" role="status"></div>
+</form></div>
+</section>
+<footer>© <span id="year"></span> Xynn Store · Halaman pengiriman terpisah</footer>
+</div>
+<script>
+(function(){
+ const SUPABASE_URL="https://iynvcczdalffmmdqyxam.supabase.co";
+ const SUPABASE_KEY="sb_publishable_zqrOTWnGdCtnJpRnyypyEQ_9c4v3LWI";
+ const $=id=>document.getElementById(id);
+ $('year').textContent=new Date().getFullYear();
+ async function lookupOrder(code){
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/lookup_xynn_order`,{
+   method:'POST',
+   headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+   body:JSON.stringify({p_order_code:code})
+  });
+  const text=await response.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){}
+  if(!response.ok)throw new Error(data?.message||'Supabase request failed');
+  return Array.isArray(data)?data[0]||null:data||null;
+ }
+ function tab(which){
+  const admin=which==='admin';
+  $('customerPanel').classList.toggle('hidden',admin);
+  $('adminPanel').classList.toggle('hidden',!admin);
+  $('customerTab').classList.toggle('active',!admin);
+  $('adminTab').classList.toggle('active',admin);
+ }
+ $('customerTab').addEventListener('click',()=>tab('customer'));
+ $('adminTab').addEventListener('click',()=>tab('admin'));
+ let adminSession = null;
+ function setStatus(id,message,isError=false){
+  const el=$(id);el.textContent=message;el.style.color=isError?'#ffaaaa':'var(--green)';
+ }
+ async function authRequest(path,options={}){
+  const response=await fetch(`${SUPABASE_URL}${path}`,{...options,headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json',...(options.headers||{})}});
+  const text=await response.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){}
+  if(!response.ok)throw new Error(data?.msg||data?.message||data?.error_description||data?.error||'Permintaan gagal.');
+  return data;
+ }
+ async function verifyAdmin(token){
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/is_xynn_admin`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:'{}'});
+  const text=await response.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){}
+  if(!response.ok)throw new Error(data?.message||'Gagal memverifikasi admin. Periksa fungsi is_xynn_admin() di Supabase.');
+  return data===true;
+ }
+ $('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();setStatus('loginStatus','Memeriksa akun…');
+  try{
+   const session=await authRequest('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:$('adminEmail').value.trim(),password:$('adminPassword').value})});
+   if(!await verifyAdmin(session.access_token))throw new Error('Akun ini tidak terdaftar sebagai admin Xynn Store.');
+   adminSession=session;$('adminTools').classList.remove('hidden');$('loginForm').classList.add('hidden');
+   $('adminIdentity').textContent='Login sebagai '+(session.user?.email||'admin');$('adminPassword').value='';
+   setStatus('loginStatus','Login berhasil.');
+  }catch(err){adminSession=null;setStatus('loginStatus',err.message||'Login gagal.',true);}
+ });
+ $('logoutButton').addEventListener('click',async()=>{
+  const token=adminSession?.access_token;adminSession=null;
+  $('adminTools').classList.add('hidden');$('loginForm').classList.remove('hidden');setStatus('loginStatus','Kamu sudah logout.');
+  if(token){try{await authRequest('/auth/v1/logout',{method:'POST',headers:{Authorization:`Bearer ${token}`}})}catch(e){}}
+ });
+ $('deliveryForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!adminSession?.access_token){setStatus('saveStatus','Login admin terlebih dahulu.',true);return;}
+  const code=$('orderCode').value.trim().toUpperCase();
+  if(!/^XYNN-[A-F0-9]{24}$/.test(code)){setStatus('saveStatus','Format kode pesanan tidak valid.',true);return;}
+  setStatus('saveStatus','Menyimpan perubahan…');
+  try{
+   const response=await fetch(`${SUPABASE_URL}/rest/v1/orders?order_code=eq.${encodeURIComponent(code)}`,{
+    method:'PATCH',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${adminSession.access_token}`,'Content-Type':'application/json',Prefer:'return=representation'},
+    body:JSON.stringify({payment_status:$('paymentStatus').value,delivery_status:$('deliveryStatus').value,recipient:$('recipient').value.trim()||null,delivery_details:$('instructions').value.trim()||null})
+   });
+   const text=await response.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){}
+   if(!response.ok)throw new Error(data?.message||data?.hint||'Gagal menyimpan. Periksa policy RLS admin di Supabase.');
+   if(!Array.isArray(data)||!data.length)throw new Error('Pesanan tidak ditemukan atau akun tidak punya izin mengubahnya.');
+   setStatus('saveStatus','Perubahan berhasil disimpan.');
+  }catch(err){setStatus('saveStatus',err.message||'Gagal menyimpan perubahan.',true);}
+ });
+ $('resetForm').addEventListener('click',()=>{$('deliveryForm').reset();setStatus('saveStatus','Formulir dikosongkan.');});
+ $('lookupForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const code=$('lookupCode').value.trim().toUpperCase();
+  const result=$('lookupResult');
+  if(!/^XYNN-[A-F0-9]{24}$/.test(code)){
+   result.innerHTML='<div class="notice">Format kode tidak valid. Masukkan kode lengkap dari checkout.</div>';return;
+  }
+  result.innerHTML='<div class="notice">Memeriksa pesanan…</div>';
+  try{
+   const item=await lookupOrder(code);
+   if(!item){result.innerHTML='<div class="notice">Pesanan tidak ditemukan. Periksa kode pesanan.</div>';return;}
+   const box=document.createElement('div');box.className='detail';
+   const title=document.createElement('strong');title.textContent='Pesanan — '+item.order_code;
+   const payment=document.createElement('p');
+   payment.textContent='Pembayaran: '+({pending:'Menunggu verifikasi',verified:'Terverifikasi',rejected:'Ditolak'}[item.payment_status]||item.payment_status);
+   const delivery=document.createElement('p');
+   delivery.textContent='Status pengiriman: '+({pending:'Menunggu diproses',ready:'Detail tersedia',completed:'Selesai'}[item.delivery_status]||item.delivery_status);
+   box.append(title,payment,delivery);
+   if(item.delivery_details){
+    const recipient=document.createElement('p');recipient.textContent='Penerima: '+(item.recipient||'—');
+    const details=document.createElement('p');details.textContent=item.delivery_details;
+    box.append(recipient,details);
+   }else{
+    const note=document.createElement('p');note.textContent='Detail pengiriman belum tersedia.';
+    box.append(note);
+   }
+   result.replaceChildren(box);
+  }catch(err){
+   console.error(err);result.innerHTML='<div class="notice">Tidak dapat terhubung ke database. Coba lagi nanti.</div>';
+  }
+ });
+})();
+</script>
+</body></html>
